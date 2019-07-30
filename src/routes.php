@@ -399,7 +399,7 @@ $app->group('/'.$settings['settings']['eventName'], function() {
 					$ist = $istService->getIst($payment->role->user);
 
 					$paymentService->cancelPayment($payment);
-					$istService->cancelApprovementIst($ist);
+					$istService->openIst($ist);
 					$this->paymentService->sendCancelPaymentMail($payment->role, $request->getParsedBodyParam('reason'));
 					$this->flashMessages->info('Platba zrušena, email o zrušení poslán');
 					$this->logger->info('Cancel payment for attendee with ID '.$ist->id.' with reason: '.$request->getParsedBodyParam('reason'));
