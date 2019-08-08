@@ -281,4 +281,19 @@ class IstService {
 		$role->status = $this->roleService->getCloseStatus();
 		$this->roleRepository->persist($role);
 	}
+
+	public function getIstScarfsCountApprovedPaid(): int {
+		$ists = $this->istRepository->findAll();
+		/** @var Ist $ist */
+		$istsScarfCount = 0;
+		foreach ($ists as $ist) {
+			/** @var Role $role */
+			$role = $this->roleRepository->findOneBy(['user' => $ist->user]);
+			if ($ist->scarf === 'ano' && ($role->status === 'approved' || $role->status === 'paid')) {
+				$istsScarfCount++;
+			}
+		}
+
+		return $istsScarfCount;
+	}
 }

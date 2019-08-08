@@ -4,10 +4,11 @@
 	<div class="card approved-theme">
 		<h2>Dashboard administrátora na akci {{ eventName }}</h2>
 		<h3>Přehled přihlašování účastníků</h3>
-		<p>Limit pro účastníky: {{ ists['limit'] }}</p>
-		<p>Uzavřených účastníků: {{ ists['closed'] }}</p>
-		<p>Schválených účastníků: {{ ists['approved'] }}</p>
-		<p>Zaplacených účastníků: {{ ists['paid'] }}</p>
+		<p>Limit pro účastníky: <b>{{ ists['limit'] }}</b></p>
+		<p>Uzavřených účastníků: <b>{{ ists['closed'] }}</b></p>
+		<p>Schválených účastníků: <b>{{ ists['approved'] }}</b></p>
+		<p>Zaplacených účastníků: <b>{{ ists['paid'] }}</b></p>
+		<p>Objednaných šátků (schválených + zaplacených): <b>{{ scarfsCount }} ks</b></p>
 		<br/>
 		<h3>Administrátorské akce</h3>
 		<div class="card-divide">

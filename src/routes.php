@@ -310,8 +310,13 @@ $app->group('/'.$settings['settings']['eventName'], function() {
 
 			$this->get('/dashboard', function(Request $request, Response $response, array $args) {
 				$istStatistics = $this->get('istService')->getAllIstsStatistics();
+				$scarfsCount = $this->get('istService')->getIstScarfsCountApprovedPaid();
 
-				return $this->view->render($response, 'admin/dashboard-admin.twig', ['eventName' => 'Korbo 2019', 'ists' => $istStatistics]);
+				return $this->view->render(
+					$response, 
+					'admin/dashboard-admin.twig', 
+					['eventName' => 'Korbo 2019', 'ists' => $istStatistics, 'scarfsCount' => $scarfsCount]
+				);
 			})->setName('admin-dashboard');
 
 			// APPROVING
