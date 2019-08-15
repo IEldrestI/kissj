@@ -1,0 +1,32 @@
+{% extends "_layout.twig" %}
+
+{% block content %}
+	<div class="card card-half paid-theme">
+		<h2>Přesun platby mezi účastníky</h2>
+		<p>
+			Zadej dva emaily.
+			Od prvního co už nechce jet (musí být ve stavu zaplaceno) se platba přesune k druhému (v libovolném
+			nezaplaceném stavu, musí být v systému).
+		<p>
+		<p>Variabilní symbol a platba se tedy přesune k reálně jedoucímu, nezaplacená platba se přesune k prvnímu.</p>
+		<p>Prvnímu (už nejedoucímu) se zruší registrace s důvodem přesunuté platby.
+			Druhý je poté označený jako zaplacený.
+		</p>
+		<p><b>Zkontroluj zda má účastník jedoucí na akci přes 18, nebo poslané potvrzení!</b></p>
+		<a href="{{ path_for('admin-dashboard') }}" class="btn btn-grey btn-small">Zpět</a>
+	</div>
+	<br/>
+	<div class="card card-half paid-theme">
+		<form class="form-group" method="POST" action="{{ path_for('transfer-payment') }}">
+			<label>
+				Mail zaplaceného, co už nechce jet:
+				<input type="email" name="mail-from" required>
+			</label><br>
+			<label>
+				Mail co nemá zaplaceno a chce jet:
+				<input type="email" name="mail-to" required>
+			</label><br><br>
+			<input type="submit" class="btn btn-small" value="Přesunout platbu">
+		</form>
+	</div>
+{% endblock %}

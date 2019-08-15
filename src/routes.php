@@ -413,7 +413,6 @@ $app->group('/'.$settings['settings']['eventName'], function() {
 				})->setName('cancel-ist-payment-confirmed');
 
 				$this->group('/auto', function() {
-
 					$this->get('/sinceLastUpdate', function(Request $request, Response $response, array $args) {
 						/** @var \kissj\Payment\PaymentService $paymentService */
 						$paymentService = $this->get('paymentService');
@@ -432,6 +431,79 @@ $app->group('/'.$settings['settings']['eventName'], function() {
 						return $response->withRedirect($this->router->pathFor('admin-dashboard'));
 					})->setName('admin-payments-setbreakpoint');
 				});
+
+                $this->get('/transferPayment', function (Request $request, Response $response, array $args) {
+                    return $this->view->render($response, 'admin/transfer-payment.twig');
+                })->setName('show-transfer-payment');
+
+                $this->post('/transferPayment', function (Request $request, Response $response, array $args) {
+                    /** @var \kissj\User\UserService $userService */
+                    $userService = $this->get('userService');
+
+                    try {
+                        $userFrom = $userService->getUserFromEmail($request->getParsedBodyParam('mail-from'));
+                        $userTo = $userService->getUserFromEmail($request->getParsedBodyParam('mail-to'));
+                    } catch (Exception $e) {
+                        $this->flashMessages->warning('Minimálně jeden z emailů není v systému, přesun neproběhl');
+
+                        return $response->withRedirect($this->router->pathFor('show-transfer-payment'));
+                    }
+                    /** @var \kissj\User\RoleService $roleService */
+                    $roleService = $this->get('roleService');
+                    $roleFrom = $roleService->getRole($userFrom);
+                    if ($roleFrom->status !== $roleService->getPaidStatus()) {
+                        $this->flashMessages->warning('První účastník nemá zaplaceno, nemůžeš od něj tedy přesouvat platbu');
+
+                        return $response->withRedirect($this->router->pathFor('show-transfer-payment'));
+                    }
+
+                    $roleTo = $roleService->getRole($userTo);
+                    if ($roleTo->status === $roleService->getPaidStatus()) {
+                        $this->flashMessages->warning('Druhý účastník už má zaplaceno, nemůžeš na něj tedy přesouvat platbu');
+
+                        return $response->withRedirect($this->router->pathFor('show-transfer-payment'));
+                    }
+                    /** @var \kissj\Participant\Ist\IstService $istService */
+                    $istService = $this->get('istService');
+                    /** @var \kissj\Payment\PaymentRepository $paymentRepository */
+                    $paymentRepository = $this->get('paymentRepository');
+                    /** @var $paymentService \kissj\Payment\PaymentService */
+                    $paymentService = $this->get('paymentService');
+
+                    $istTo = $istService->getIst($userTo);
+                    $paymentTo = $istService->getOneValidPayment($istTo);
+                    if ($paymentTo !== null) {
+                        // transfer and cancel payment, if exists
+                        $paymentTo->role = $roleFrom;
+                        $paymentRepository->persist($paymentTo);
+                        $paymentService->cancelPayment($paymentTo);
+                    }
+                    $paymentService->sendCancelPaymentMail($roleFrom,
+                        'platba přesunuta na vlastní žádost'); // everytime!
+
+                    $istFrom = $istService->getIst($userFrom);
+                    /** @var \kissj\Payment\Payment $paymentFrom */
+                    $paymentFrom = $istService->getOneValidPayment($istFrom);
+                    $paymentFrom->role = $roleTo;
+                    $paymentRepository->persist($paymentFrom);
+
+                    $istService->openIst($istFrom);
+                    $paymentService->setPaymentPaid($paymentFrom); // to send email and set role correct
+
+                    $this->flashMessages->success('Platba úspěšně přesunuta');
+
+                    // handle scarf correction
+                    if ($istFrom->scarf !== $istTo->scarf) {
+                        $istTo->scarf = $istFrom->scarf;
+                        /** @var \kissj\Participant\Ist\IstRepository $istRespository */
+                        $istRespository = $this->get('istRepository');
+                        $istRespository->persist($istTo);
+                        $this->flashMessages->warning('Účastníci neměli objednaný šátek nastejno. 
+                        Novému účastníkovi byl nastaven šátek na '.$istFrom->scarf);
+                    }
+
+                    return $this->view->render($response, 'admin/transfer-payment.twig');
+                })->setName('transfer-payment');
 			});
 
 			// EXPORTS
