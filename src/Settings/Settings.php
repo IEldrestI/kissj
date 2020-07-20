@@ -60,8 +60,12 @@ class Settings {
 
         $container[Connection::class] = function (): Connection {
             return new Connection([
-                'driver' => 'sqlite3',
-                'database' => $_ENV['DB_FULL_PATH'],
+                'driver'   => $_ENV['Database_DRIVER'],
+                'host'     => $_ENV['Database_HOST'],
+                'username' => $_ENV['POSTGRES_USER'],
+                'password' => $_ENV['POSTGRES_PASSWORD'],
+                'database' => $_ENV['POSTGRES_DB'],
+
             ]);
         };
 

@@ -1,30 +1,26 @@
-create table bankpayment
+create table "bankpayment"
 (
-	id INTEGER
-		constraint table_name_pk
-		primary key,
-	bank_id TEXT,
-	name_account_from TEXT,
-	move_date DATETIME,
+	id int generated always as identity
+		constraint bankpayment_pk
+			primary key,
+	move_date TEXT,
 	price TEXT,
 	variable_symbol TEXT,
 	account_number TEXT,
-	constant_symbol TEXT,
+	constants_ymbol TEXT,
 	specific_symbol TEXT,
 	note TEXT,
 	currency TEXT,
 	message TEXT,
 	advanced_information TEXT,
 	comment TEXT,
-	status TEXT,
-	created_at DATETIME,
-	updated_at DATETIME
+	status TEXT
 );
 
-create table event
+create table "event"
 (
-	id INTEGER
-		primary key autoincrement,
+	id int generated always as identity
+		primary key,
 	slug TEXT,
 	readable_name TEXT,
 	account_number TEXT,
@@ -42,8 +38,8 @@ create table event
 	allow_ists INTEGER,
 	maximal_closed_ists_count INTEGER,
 	web_url TEXT,
-	created_at DATETIME,
-	updated_at DATETIME,
+	created_at TIMESTAMP,
+	updated_at TIMESTAMP,
 	data_protection_url int,
 	diet_price INTEGER,
 	ist_label TEXT,
@@ -51,46 +47,46 @@ create table event
 	contact_email TEXT
 );
 
-create table user
+create table "user"
 (
-	id INTEGER
-		primary key autoincrement,
+	id int generated always as identity
+		primary key,
 	email TEXT not null,
 	status TEXT,
-	created_at DATETIME not null,
-	updated_at DATETIME not null,
+	created_at TIMESTAMP not null,
+	updated_at TIMESTAMP not null,
 	event_id int default 1
 		constraint user_event_id_fk
-		references event,
+			references "event",
 	role TEXT default 'withoutRole'
 );
 
-create table logintoken
+create table "logintoken"
 (
-	id INTEGER
-		primary key autoincrement,
+	id int generated always as identity
+		primary key,
 	token TEXT not null,
 	user_id INT
 		constraint login_tokens_users_id_fk
-		references user,
+			references "user",
 	used BOOLEAN,
-	created_at DATETIME not null,
-	updated_at DATETIME not null
+	created_at TIMESTAMP not null,
+	updated_at TIMESTAMP not null
 );
 
-create table participant
+create table "participant"
 (
-	id INTEGER
-		primary key autoincrement,
+	id int generated always as identity
+		primary key,
 	user_id INT
 		constraint ist_userId_fk
-		references user,
+			references "user",
 	first_name TEXT,
 	last_name TEXT,
 	nickname TEXT,
 	gender TEXT,
-	birth_date DATETIME,
-	birth_place DATETIME,
+	birth_date TIMESTAMP,
+	birth_place TIMESTAMP,
 	permanent_residence TEXT,
 	country TEXT,
 	id_number TEXT,
@@ -103,8 +99,8 @@ create table participant
 	tshirt TEXT,
 	scarf TEXT,
 	notes TEXT,
-	created_at DATETIME,
-	updated_at DATETIME,
+	created_at TIMESTAMP,
+	updated_at TIMESTAMP,
 	patrol_leader_id int,
 	patrol_name TEXT,
 	drivers_license TEXT,
@@ -120,24 +116,29 @@ create table participant
 	uploaded_contenttype TEXT
 );
 
-create table payment
+create table "payment"
 (
-	id INTEGER
-		primary key autoincrement,
+	id int generated always as identity
+		primary key,
 	variable_symbol TEXT not null,
 	price TEXT not null,
 	currency TEXT not null,
 	status TEXT not null,
 	purpose TEXT not null,
 	account_number TEXT not null,
-	created_at DATETIME,
-	updated_at DATETIME,
+	created_at TIMESTAMP,
+	updated_at TIMESTAMP,
 	participant_id int not null
-		references participant,
+		references "participant",
 	note TEXT
 );
 
 create unique index user_email_uindex
-	on user (email);
+	on "user" (email);
 
+INSERT INTO public."event" (id)
+	OVERRIDING SYSTEM VALUE VALUES (1);
 
+UPDATE public."event"
+	SET diet_price=100,readable_name='test',bank_api_key='test',maximal_patrol_participants_count=100,ist_label='test',tshirt_price=100,account_number='test',slug='test',minimal_patrol_participants_count=10,prefix_variable_symbol=100,scarf_price=100,bank_id=1025,created_at='2020-06-08 22:46:49.739',maximal_closed_patrols_count=100,contact_email='michael@kaplan.sh',max_elapsed_payment_days=14,allow_ists=1,allow_patrols=1,updated_at='2020-06-08 22:46:53.928',event_start='2020-06-08',maximal_closed_ists_count=1000,automatic_payment_pairing=1,web_url='kissj.kpml.net'
+	WHERE id=1;

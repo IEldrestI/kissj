@@ -1,0 +1,76 @@
+version: "3"
+services:
+  app:
+    image: git.kaplan.sh:5050/michael/kissj:latest
+   #ports:
+    #  - 80:80
+    environment:
+      XDEBUG_EXTENSION_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=172.17.0.1 remote_port=9001 remote_autostart=1"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kissj.rule=Host(`kissj.kpml.net`)"
+      - "traefik.http.routers.kissj.entrypoints=websecure"
+      - "traefik.http.routers.kissj.tls.certresolver=cloudflare"  
+      ## HTTP REDIRECT
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.redirect-https.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.redirect-https.entrypoints=web"
+      - "traefik.http.routers.redirect-https.middlewares=redirect-to-https"  
+  
+  database:
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: develtest
+      POSTGRES_USER: kissj
+      POSTGRES_DB: kissj
+    ports:
+      - 5432:5432
+    
+ 
+      #Missing TLS config 
+  
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
+      #- "--certificatesresolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.cloudflare.acme.email=michael@kaplan.sh"
+      - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
+    
+    environment:
+      CF_DNS_API_TOKEN: "hXFSu3L44XgbmXzJIcqIGZ_xwHoRsyxOXCBJqN-y"
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "certs:/letsencrypt"
+      - "./users_credentials:/users_credentials:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.kpml.net`)"
+      - "traefik.http.routers.traefik.middlewares=auth-middleware"
+      - "traefik.http.middlewares.auth-middleware.basicauth.usersfile=/users_credentials"
+      - "traefik.http.routers.traefik.service=api@internal" # <== Enabling the api to be a service to access
+      
+
+
+
+
+volumes:
+  db-data: 
+  certs:

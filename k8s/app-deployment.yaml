@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f test.yml
+    kompose.version: 1.17.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: app
+  name: app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: app
+    spec:
+      containers:
+      - env:
+        - name: XDEBUG_CONFIG
+          value: remote_host=172.17.0.1 remote_port=9001 remote_autostart=1
+        - name: XDEBUG_EXTENSION_DEBUG
+          value: "1"
+        image: git.kaplan.sh:5050/michael/kissj:latest
+        name: app
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: app-data
+      restartPolicy: Always
+      volumes:
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: app-data
+status: {}

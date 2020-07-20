@@ -1,0 +1,26 @@
+version: "3"
+services:
+  app:
+    image: git.kaplan.sh:5050/michael/kissj:latest
+    volumes:
+        - app-data:/var/www/html
+    environment:
+      XDEBUG_EXTENSION_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=172.17.0.1 remote_port=9001 remote_autostart=1"  
+    
+  database:
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: develtest
+      POSTGRES_USER: kissj
+      POSTGRES_DB: kissj
+    ports:
+      - 5432:5432
+
+volumes:
+  db-data:
+  app-data: 
+  certs:
