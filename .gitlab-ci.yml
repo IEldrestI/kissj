@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 stages:
   - lint
   - build 
@@ -28,13 +27,3 @@ build-postgres-docker-image:
     - /kaniko/executor --context $CI_PROJECT_DIR/sql --dockerfile $CI_PROJECT_DIR/sql/Dockerfile --destination $CI_REGISTRY_IMAGE:database-latest
   only:  
     - master
-=======
-kissj-build-master:
-  image: gcr.io/kaniko-project/executor:debug
-  stage: build
-  script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
-  only:  
-    - master
->>>>>>> 1fd31b9... Add .gitlab-ci.yml
